@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Alan Curran" />
+
+<meta name="date" content="2020-10-01" />
+
+<title>Evaluation of Non-Linear PLR</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Evaluation of Non-Linear PLR</h1>
+<h4 class="author">Alan Curran</h4>
+<h4 class="date">2020-10-01</h4>
+
+
+
+<div id="non-linear-performance-loss-rates" class="section level1">
+<h1>Non-linear Performance Loss Rates</h1>
+<p>Typical PLR values are reported as a single number, such as <span class="math inline">\(-0.5\%/yr\)</span>, that is meant to represent the trend of the total available time-series. While this is an easily interpretable result and is useful for warrenty trends which guarentee certain power outputs after a given amount of use, it is based on the assumption that the system is changing in a linear fashion. This assumption can lead to biases in results, especially considering that there are several well known causes of power loss that are not linear, including seasonal soiling or light indiced degradation. In particular, light induced degradation has led to PERC modules typically having two rated power loss warrenties, one for the first year and one for after the first year. The first year is expected to have much higher power loss while the module saturates and stabilizes, with less power loss after a period of exposure. This information can be lost in a linear assumption of PLR, so it is beneficial to include functionality to automatically evaluate the non-linear trends in PLR for a given system, especially in a PV research setting.</p>
+<p>This function has been desgined to provide an easy to use and interpret method for evaluation non-linear trends in PLR calculations that can be integrated into assumed linear PLR calculation pipelines.</p>
+<p>To maintain a high degree of interpretability, non-linear PLR is evaluated using piecewise linear modeling, through the segmented package available in R. Piecewise linear modeling divides a time-series into a certain number of different linear models at a series of change points. All the models start and end at change points, with the exception of the Y-intercept and the last data point. Each individual PLR value can is the same as a linear PLR value, but instead of a single linear value a time-series is representated by a series of different linear PLR values, creating a non-linear trend. This is similar to the more recent ratings for PERC modules with different PLR values for the first year and the rest of the modules lifetime.</p>
+<p>The change points are detected automatically based on model best fits. The user specifies how many change points the final model will have.</p>
+<p>An important note is that time-series with seasonality will often not give good piecewise linear fits as the change points will fit to the seasonal trend, not the overall time-series. As such, it is highly recommended to decompose any time-series before running a non-linear PLR evaluation. Keep in mind the decomposition will tend to smooth out sharp jumps in the time-series, which may bias results depending on the nature of individual systems.</p>
+<p>An example of a typical non-linear PLR evaluation is given below.</p>
+<p>First build a weather corrected predicted power time-series as you would for any PLR analysis; any model choice will work. We will then decompose this time-series to prevent seasonality influence.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"></a>
+<a class="sourceLine" id="cb1-2" title="2">predict_data &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">irrad_var =</span> <span class="dv">800</span>, <span class="dt">temp_var =</span> <span class="dv">40</span>)</a>
+<a class="sourceLine" id="cb1-3" title="3"></a>
+<a class="sourceLine" id="cb1-4" title="4">weather_cor_utc &lt;-<span class="st"> </span>PVplr<span class="op">::</span><span class="kw">plr_xbx_utc_model</span>(test_dfc, var_list, <span class="dt">by =</span> <span class="st">&quot;day&quot;</span>, <span class="dt">data_cutoff =</span> <span class="dv">10</span>, <span class="dt">ref_irrad =</span> <span class="dv">800</span>, <span class="dt">irrad_range  =</span> <span class="dv">20</span>, <span class="dt">predict_data =</span> predict_data)</a>
+<a class="sourceLine" id="cb1-5" title="5"></a>
+<a class="sourceLine" id="cb1-6" title="6">decomp &lt;-<span class="st"> </span>PVplr<span class="op">::</span><span class="kw">plr_decomposition</span>(<span class="dt">data =</span> weather_cor_utc, <span class="dt">freq =</span> <span class="dv">365</span>, <span class="dt">power_var =</span> <span class="st">&quot;power_var&quot;</span>, <span class="dt">time_var =</span> <span class="st">&quot;time_var&quot;</span>)</a>
+<a class="sourceLine" id="cb1-7" title="7"></a>
+<a class="sourceLine" id="cb1-8" title="8"><span class="kw">ggplot</span>() <span class="op">+</span></a>
+<a class="sourceLine" id="cb1-9" title="9"><span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> decomp, <span class="kw">aes</span>(<span class="dt">x =</span> age, <span class="dt">y =</span> raw, <span class="dt">color =</span> <span class="st">&quot;Raw&quot;</span>), <span class="dt">alpha =</span> <span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb1-10" title="10"><span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> decomp, <span class="kw">aes</span>(<span class="dt">x =</span> age, <span class="dt">y =</span> trend, <span class="dt">color =</span> <span class="st">&quot;Decomposed&quot;</span>), <span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">alpha =</span> <span class="fl">0.5</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb1-11" title="11"><span class="st">  </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;orange&quot;</span>, <span class="st">&quot;blue&quot;</span>)) <span class="op">+</span></a>
+<a class="sourceLine" id="cb1-12" title="12"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Time (days)&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;Predicted Power (W)&quot;</span>, <span class="dt">color =</span> <span class="st">&quot;&quot;</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb1-13" title="13"><span class="st">  </span><span class="kw">theme_bw</span>(<span class="dt">base_size =</span> <span class="dv">8</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb1-14" title="14"><span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="kw">c</span>(<span class="fl">0.3</span>, <span class="fl">0.3</span>))</a></code></pre></div>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAABSlBMVEUAAAAAADoAAGYAAP8AOmYAOpAAZmYAZrYBAf8DA/8HB/8ODv4PD/8dHf0fH/8zMzM6AAA6ADo6AGY6OgA6Ojo6OmY6OpA6Ovo6ZmY6ZrY6kLY6kNs/P/9NTU1NTW5NTY5Nbm5NbqtNjshmAABmADpmAGZmOgBmOjpmOpBmZmZmZpBmZrZmkNtmtttmtv9uTU1uTY5ujshuq+R1dfV/f/+OTU2OTY6ObquOjsiOq+SOyP+QOgCQOjqQOmaQkLaQtpCQ29uQ2/+rbk2rbo6r5P+2ZgC2Zjq2Zma2kDq2kGa2tma2/7a2///Ijk3Ijm7Ijo7IyP/I///PjD/bkDrbkGbbtmbb25Db2//b///kq27kq47k///r6+vznw/3ow/9pQP/pQD/pgP/qg//tmb/uz//yI7/25D/29v/5Kv//7b//8j//9v//+T///92h7IoAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAZlUlEQVR4nO1da3scSXUe74RouqemYxLWHVAphDUhN+KAJSDxQojCaiHEXuIV2XjZgQTLVtY2/f+/ps6p+72voxmpz+NHkqemq6rfrnM/Vb1oZkrS4qYnsO80A5ShGaAMzQBlqAtAf3LHqDtA+s9t8otDWifsuuPAM0CZ5hmgTPMMUKZ5BijTPAOUaZ4ByjTPAGWa9xwgSkfv+lYBRM/OggjNAM0AzSw2C+mBM5kBmgEyOguKim28KTCRTs2HBlBY2WzjTYGJdGqeAbplAM0s5l8xeCYzQGMDZC7FGSC/2RJmM0B+M6mmBEgvz0MFiJ5VZLqBjeV5uACZ5sIMUEAG0QQfDB54JyzmWjzjAKR7TTzmKQYWNB5Ans08yjyNXg8GoG2Y6tPTOtI0gMxe6wn6z9IBsdhIXd9WO2hHrQcFUMzPnQHizdFIyQxQc1sBsnliZjG3M+eRz1rMvYspAEpEc3t2HfTFaLR51Jj0yCxmdt3l4s6t5iCTApSdSetW0Wx5qCN1fRMAjX8XvLlnSmT/WKz9TNq27higRPO+AlQHhNpOBj4QgOhp1EicduCDAmhiQzHc/aEIacZiTAKRCVksIuAOSM3Ts6qsphPSewFQnEnaAESWhJJYa/raNq27YzFKIyyW8MfzAMECIuXhq3kGTrQUtStAlr3GAKqq8AI6JIBAksZrdbuxmGPxi4VJR3bzdg+QeR/tZ9LWJeIfjhgouAEWQ3z8ZTSOSyQAqqrDBIhKc2UUgILNHP/pARJPZ1yAkMHOyjJo9m5TIqjjg3SMxgkAkk94fIAapouD9tw2pcS6rnRqqYKDAQjXiF26Y7QOBIgSvS4dY+JgWMzq2p/JIBZjy7IigrOUrmx1cafWXMJ8UoBS1BKgqgpo+REBytakDLaDggosOFSXVsViQvQgK0/BYtMCVFOuxlyAaFDcpeYZbdaCKBVZ79K16pmav6IXDwGInjI3gwlo6oRtxK2MoeaNBzAyQG3XfRSgtz84+ebzP/zbyQeN/mFcgWNsKlowG4gyt9u8VAI0gpo3V6jWaGMDlJL/UYA+f9J8/vj14+aTj9iPZ0/wh3EF9rupCJOklJDKDksIFhsAEK0NJ9VeiNBrH4BkLw6LNZkS7BSLvWaI/OFnz3/zUfP6Mf5o8PQgszxufbpZb+tyvQlWx/WumcOeIxV9PUv94pfVmzo8faQEQG9/9AVjtA/YGmLYfCIAcoS08JSCsWPjWQSEkfmk3Gamu05jQZS+LKaWs9earlGPA/T2h8/hl1g8vwkBtBXzDZtCeqgQr5nwOc3geNUDJHw7FvNbgs1RgL783nMURK8fR2UQD3fA3VFtrYSG6g6QIWVCy3Pr31i4686t7QF6dnJy8pjprm99EdViBkCox+JRra4sRrWNAAZ1GN1JEtMTBMzgAdNVUXkm9bB5KuW+G4DUMxobID5LQsqVp4+lwdHnLgyAyBQsZlzqBERHBQjTn6ACaLlcsRsJAdTLU6N0K2qDpimg8jY4TAMQJtC5lVUQsqJlFWCxPgCxa9aUh4BItROApmExcDUEQExKl2GA+rAYW5abqoJ8UhFOjQ0FyGOx+MVDAZJWFnvehNoaecBd0AIAoqQISehhXWfkVxagywWj49QAGiCyMVmAUtupGQTQ2YYwmWblVkeNKMbdxDRAVxyby8Wj+AAKIHYXBdELiJm/9vMeBBBzNarCTGWMFJNm4p/S3gC9+Xv58c+fRocwAaow49OIBDRHKyru4hPx1zutMeJqfD4OQLSq1vYscxfbAD18Lw6MfQWOtq5oSeQDESW7cYUZnUjYEyEVvxEm2cQijd9FtGuXGOM6cq1jRPHNw8UiA5JpKJJKlC4QLSrGAgglGoih0q8SGgLQ2pKUfWLSmXXk5MWks6rMRIvFoq5+hsWkkW4ANMoKYixWG0+zD0DX9xdHyeGtzCrlvgDqG9ekk/cYjuzE7wJ5FdHFgL1gsRGFtDWfbizGOOwrL5KD264GhuxREBUxgGRqy6XoXXCBXzcaE798ZJCaT0aCM0L6r/Iy2gII5B1TNgQyfMTY4U7lUFz9d7L1OEBrQ/T7waZhdlAk4RO+2FtBWT1mCWkoQ2WrR2h4O4PVw9WQIosSLCRX7pgL8XBLutEVNeniNU8GZbnMkkF8EGlE2xms7nehFz89FQYo8mgx3pkFVMUqwTNqmsYVkS202PX91lpMx7tFYLGiOk8zBKBmXUn5o6ogx0g9U868+Cc+XOqKyBxAFx3sIFo3livW0LI0nkePu9AY1LqkDFmOWBnuAQBVG1koImW/zb8ZSzrlhFlXYN+nVK4ZPiAzWJbjHLDR1KXORbIReClMC4BgMkkWIxurJ6/IOw1QR1/slIA/IJUxkxUlMfynnLYNCW/14Zoq81m6wW1YDJdZcmDqAtRJBnXy5pkvdlZVqkwannJRGZZLGqA6ZI1ojc5ZTFlANM0HdgdpgE6tWqzOMqhLPAhukk1cWu7oOxl6vjdAmDg0HF+zFo9/rY52m2Ax0UVt1XWzIQpidt5Ci2XIdTWEnKbGTXALrzeLQd3sqWEvuNX8IPySXQc/lXbPVqU6RdrcXkPjAtQ0Mm/lODhEeAtxSsFHVmSjWRWlmxFlp/0AEnaPMN6oEp50aoCEDW1VAOCgfQDiiDBtWJifmrY0PvpeXcsVxM3/1UoJz2R9qBsPyntjweIFp8gGrYs+dhCXQUw31uakrWKnrBjOySCmamlTVOUyG4YBGg6QHN4LIvQFCNGtbVU8vOtGIrTG5UmKMrwXLWtJZy3F2KZex+LKCungpyp+u9ZumYjJ2bq4R3GMMJqFjb5cWRm3tolDCLlmnI3YIW92DZf4T68as7qGCrNadQTFZsYn3lhtuz3dbOAqnFN9ulrJHtkH8f6Gq3nzCVlSqG60MvUpbc2BntI2FQaFzBxZv/JHbjTzVohiiUywXcqcYzG2hP7hx+epyduGojlNYq/ZLVc/7XLzDoxQxGnFE5mORuEqL+5Xf2bIL6YIlqjOHA7OAPTuw0cXj64fpAJCUYBMx7UR98hcs1YAqW9Je3PrqS5aFmXsLlJdG4NQs5XpSlJSY42HgzS+Frt4lFZlURZjlphpz1WbgHSN3YVaLjwDiYxgeUxQjU2GAeTG8dDENWJ0XHi3WUFXyZBi9GgKYZxKu4jWJMUIYRZTUf5As/Zp+kRzPYAo94BVH8LSbqPF0hGz+NkdVHE0/Mcpv297F2IDi2NB6F+Godi19IizrwRXRsqI2EvRbgWhO5905nOHm6hZQ+1HopsEl5DCtpVd9Ujl4TntxBvVf/ACY9EPd8HYwlmuSIUxy9C8Qmr+sn1mNUBSl/U+4QbXugWQtRjhPk8NBZfpWot/kag9FWa5iJRBFLRcrQoZoMsCdLHokFkNNGvBXKfwSQLEfAELIKngVXC3A/YGQEylEnK2scLosF6rYlm2BejNw96uhp4Q4VmyfrqYEewgslcQr8cw4o0dsFeo8uSv4cSob0AgVCx8L1Aw+grCCBTugzatOZ8ZUjKIzdeCgBZEft44dfghCk9Llg/UgUSvVmWVG2oKyaCrQTIIo5gwk63mtoA4TZi7wAsWE8lILBYMeTrOowhAvACFbKLeDzLzxrHcPICuhq4gFUKuiXJyWgEkgxooTWMAUWlGJigyLWF91GZWg4hiM2W8MfFnV1p6MiiNTtNCi8nMxqlxZEULFtN7DhBd6wJ+Oe5uVPmAuBGagg80opbbIJqFr8q3n0Okzq5AG2NbuEXqHAZIs9L4fSQAinTNvyAzSgl/XpiRoWbmgGkeomdQm8UBksWWdOuckxDw5ntb0jiBkgijhayLslNMwoobhgCSFbUYzc0BZPm68kGhHUTlUCAsC4r/0cdr1I6E8n0xJob6+WINfyYy3k5qUkaPscumnoMWhJAiTI40WRZzdhuIUgXmLtawyrnfi8kXKg0TDqFrYoVi0u29ee8WqhJjLIjLmlCvLCNxLRBuiKHRZjEGByjYZlxr2BhsFgUWOgJMcKZDUYqyvkoUirInKYyIDEBDV1AFuXksytOCwjn7J3Ztg0qkFEmqxAITLBboM1aYRGWshGCcgK3zFa4ngtPlloPM762dfseVQUIfVwRiW1LVFMHD/qxrtZZtARAGK4OVfWGAUAKJLZEV4ZEmNEX0OY1U7evycpJDtNjL/1X0yrpTCgcgSqPdDHQZZN6FkhdMZiZZTFqdtV90YAy/Nf9jrGJKNEDcczUPshR9pwG6vt+hytXAx6KGs5ocioZL/0MAGYI1wCaGr1E3XtmK17W047kJXWHwEKopa5XKBhZzNV3aF3v34/PmMh0NagGQQS/V0N7dhFgsAZAZdNVV1GHSAPHKSQjicoDATdyAuGHee9OY0lGlNtyBvTLg668nwNFXALVAyFlZ3l24MJA0QIXYGdvGUARG4nF+KvbZwAIpIBIsrR6uU0T/UM3cCqBkSqMJC+nfd4MqRJ9SYZYEq6+4aEJxL2yZPEBqrzHgrhwgsKSbQm5SqlTFF6l44m0agEwajpVffSU9OmAJUHUg3kg05K2ulZE2s8CI1tom1+c36R0BaYAw8ZxLPWcAUvJ425UHHXpldGkkEZnGBnehzQqSLoWRbHH9ODN9G1q64zur0kKRxgqziQos7RwE1qcGGJTSTlltdCWoZFNsleFDS4eF72kCgNgTPuMVZrz8kgQ2ujhqntAOUuwl18WpY4gtYuKnkB4FNVdQ0NjcBUDLFUY3a/2kAjaLca2Z3STLVVug0BvPbxoHq4fnUDlAtbFloqqMZdg+7ZOmLEBlVSx5hZkWHcmAmZGYJ9WqEAnOtmvKn4En4AuxuxPjh8brBNBCMtJCJBCsjAppPMMMD8hJn/7iEyhjSqkGKMgKDovBL15HXBR+1zmwXiYAEh4Glf6GHczVfEp5rsEtHAlVmF1B2BXPMGuencAJQqnzgwJEiPIHMBkddAp8V0NEDCMeubgd2vw2hpLSevoeidwyxPdVYe7LTRlRqR8p1vO7pUepeNDrJ2//k+EUPcMsXc7FK8zWUNa1rtOVZvzLNZyHtl1vorVj+DVRarbeRGAyBt+u6/WS17nVxWazrjf+WWViYmIG69orXkvEg+AMM1hI8TPMIisIn4iIi/JkVOA8XN8X4yUE4puhrmWJpyqOgb+DKIlFwCzpAgPAbGWsyrOAoeO7yTkWAzEk8MEzzNwV1BIgkd1j9nuBBXQ8hBYFSM9RugQRFhM/JJtwZ52mDdJPFUBm6YwNUOsKM014hpk4xayjDBLTxtCdiNv7Z06HAVJLLbE4G7Uf0RKyLbXe7+2eXYeF1k5oJlqjiGeY9dJiMhCzNaNaXobDv9YKi8Sxh58bHh41C+hEczuUBL10FCzf5WB/NqhGMQEQb6X6wAo3apZEINf1WuyQdfSj1ICdUBLUiM2fGYA61igmvjYJkVLu2KEhb0ys3a31QR+0DLtqxBrF6QlDilrQ+uY5xa2tOmpqVgbwb7/qitDImdVpSW1d3YbQaWTgxwgrKytQk550SvmpL43vi01JMjQYe20Q5zrfxDIhCrQ2bpjvf36rvjFuZnV64tK+tk/Hc+I65vryy298H0deh74GqPnf/U73bWc1PuTO6r7KoEbK4dPVyj8Kw5iWEUBpBZD4DXatm/Yfbb/Yrgj1V1mWpfZLIgBJ5jIKpHir01ujYayKbGaVabDrr7bdzHITKwjnXxBScA8G1b5jDm+VMY9XePDFusWtNxmAIHWYSWzcKEDSFMQzBIlR1ml+aWt+1Qu2RCfNS/wyVa77LqSxCIFiXgxUPlHvbTG/JKalVkXOx5F9B8sfxy1/mZwg08V0zQb9fogAFu7xZua0KKX+UZ7xSQcLaA/KUOS2tAAIN3wF36Mpp0UqlXIOtIZ6P8MC7XQZcJZuVkiDN0blhhRSrhIACcckd3qJJswdnjoesJN6/o8Wm3rbjDUZcXlTi71edt7HiQTwYhAnt5OWQRjTL1J10i3ohgFCYE75ZgeeFPCKZxSLlZUoDzKjUWmAmnWRKAMeJzc/JYliVQmQdE9tg2drfhmLfM1Xx6RYDLou7dBeNO0TpRsFSOybrIk8IJ6eaZZwg22qKMo6CyQ1aUrIxomeH5wdhAunlrcO272YgxBV8yJfapraKS1mnBEl6cDsILFKNEDuIal+3sI55ToHUO0YVfG0T4xu2FnlA2O9GbANOJiGXvbKDCl1q2zTLJY1FPO0FwA1ShwRS4m7AGHGuWy7grA5v4LaH02xDwA5RT7OViqqhZV5bYJqJwk8QdpnB4QDEy6bTUvZ34/iBIOaPEBOEviw0j7WwDJZ4ZZkKoB8cNS1ia6dJPBBpX3U/WqAVLl4o/O4gsVEdX23k4SbbXpL5p5780bStmlUrtotORTTAvMwsKUjC1DSm9/zmLQNEH5CqKrPl+aguEd8p5dfvZUHyKLDAshiMWUoe74YR4WsiDru1KCckHZYMuSLpSlaYZa7cBiFC87gXLKNqElTpWH8sLJ6U5frbddj1OrNurQuCB2Ps8fevDkwlVuaZExIrpV1xTekB3NCmUnTsiIpO6gF7Q1Awuqp9Fu7RCZMHvduM559bZTWtt09ZENdbqyXL91PWPeLe0kzPUCXAaa3nAmlpyAGDUsH3uqlD1juKIOSrka3DXWZsV6+euUiBHvRWr2awqQMQPoliFAIWdKyIJtyWVUrEjkBa4gW67ihrhdA7IbxxQvvPmSijv34yourP7//3i/Zf+A3/wTfXoHfYj++lllBcisP1IsXFSnIagU/irIIvrttOEBD94spCrAYAHR1zNbE1fHVcXN1xJbr5TEz3C+PGG7sN2uDT9gX3v03fov9COlVPTDsgzuTxwPAjsKSkOWSraNqFTn3oQVA0eKFcQHySaygC6Yoj5BzPj5nnwFUxwDQMfsPfsLWzb1z/Bb7b5LFMAZITJ+dLlc17EgN7Q9pM+lt01gb/XcatBcyCG8Z4HjwC1xBEqCjRqygRqwzFEDJFSQ2MEu3FE3H1Sq61a7FpLf6aG6knap5ocXgORw3F+xPLoMkQF+TUulywWXQ4jgrgyiVz5vy18MEatZj18aa4yuoFU1mB13l9Gd4YMoPhqb85RKkWMLG78QSGiKDWtG+AYQMIYqcqwI2q5Uk8kYq79oWzXsEUAeyVhAP+/CSdeYpLJf1EjIdRQSiOweQWU2GSoysqpKtIhI2g+4gQEBaqeMWVcKsxfA7fu8qQKrgDnwwDCuH3sIeuTbZfHsAwt0y6NpvEwef3FWAKI/cw7EVvIqO0tjRFXcSIKjxKMULacTZMIHX14avzTTfDoCgoJOs5AlxaAwHi/NC12aabwVATACBXi/1fldarpYziynCGpilKoPZggCqwm+muZsAwaHZpTqCEd8LV8bsxDsJELCYET/E8qrMCWdtu74tAJWFWaaZcubvJECcxZThk57W/oQ7fEsNAmaZl1K0I28FnRFSECM33/7aQLOVSpsOICtwyQlCru/S9WvtKADQ2aqsljQ/rUMAiC2ke//6k6eXx2/+JpeljJBnSUMGerVKnfsRvTbQfNMs9n8vmstHvz7/97/77LsdxjXJ98XgnMjCK45pdW26ebdB+69jVgn2Dj+6+sa//PyX+TdLh8kbmL/IjIzDYhbtGiDY5/DxeXPx6M1ff/fX73fMQkcHtl9kdtgANRfHV4vF3x43uVrIFHkAVZWxD25XAH3+BE56+6Dz8Tg7oCBA0db0tZnmOEBwvhscr/Sk8wFL01MgHrRzgPB8NwDog7aHvKUHHkqZyrk+ryttRVkW+8vv9zrkbVoaskZGlUGMxOLpeMjbxLQ3ALF/zw5BBo3X2hEgrcD2W4uN13pLwx3jtc4AzQDNAGUHngG6JQCNOs9dtc4AzQDNAO124BmgTPMMUKZ5BijTPAOUaZ4ByjTPAGWaZ4AyzTNAmeYZoEzzDFCmeQYo0zwDlGmeAco0zwBlmmeAMs0zQJnmGaBM8wxQpnkGKNM8A5Rp7gHQVLVcaZquhixNh7KCxqtCvKUsNgOUa468ZW7ygQ8GoB21zgDNAM0A7XbgGaBM8wxQpnkGKNM8A5RpngHKNM8AZZp7AHTHqDNAHrq7v3b3A/cE6O7QDFCGZoAyNAOUoRmgDPUBSG/S7ERvf3Dyzefs2r/4qEcH+rruF39+cnLyuO/AfQDS23w7EWwVfvz2n/p1oK/rNfqvnvcduA9AeqN4V3r95Mt/PPnWFz060Nf1GZ1d0HfgPgB90hegtz/6Aqb6zz060Nf1Gf1Xz5u+A+9yBb394XP41W8RBA46aE1fft/soNu1O5RBX37veWMcmtLt4tBhK60JQOk78A612DOhTPooouBBB60Jjtroe+1sB2VoBihDM0AZmgHK0AxQhvYDIDyHcnHvp6EXeOEro959GDh4sfdxnl1oPwBqmugLBPl784IAdXknUG/aK4CuH3z2/ncW3/hwcdxcLRZH+PnH56xt8UffecR+so8ujuHESjjRk/3x7id9z6tsT/sG0FfPr9m/B58xZsP3r+Gr8/706fV9eNU7+w/7m62mqyP+SsnQO+xGpn0D6MGLa/j3Xwtx/jScAAtNDC04SvicoQNfuM/XV/bFnsNpXwE6Eh9rgK7ee/rm2+f8/ZEo1h/dZYAYq3G5LFjszUN8ESK8BfDb7z9tLo8alEb591MPpj0F6IUjpO/9Gbyj9Y8fwqqBzy8W8GLhOyWkY+S+Htc8+P1Oqfko2XLmanGk/r5bhuK+0gxQhmaAMjQDlKEZoAz9P3RJKlCkaQdjAAAAAElFTkSuQmCC" /><!-- --></p>
+<p>Comparing the trends we see some yearly seasonality as well as a few outliers that are removed during the decomposition. Initial observation seems to show that the trend for this system is fairly linear, with no major shifts in performance.</p>
+<p>A quick runthrough of linear PLR gives <span class="math inline">\(-0.69\%/yr\)</span> for regression and <span class="math inline">\(-0.68\%/yr\)</span> for YoY, very similar values.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1"><span class="co"># multiple assumed linear methods of calculating PLR</span></a>
+<a class="sourceLine" id="cb2-2" title="2">PVplr<span class="op">::</span><span class="kw">plr_weighted_regression</span>(decomp, <span class="dt">power_var =</span> <span class="st">&quot;trend&quot;</span>, <span class="dt">time_var =</span> <span class="st">&quot;age&quot;</span>, <span class="dt">per_year =</span> <span class="dv">365</span>, <span class="dt">weight_var =</span> <span class="st">&quot;weights&quot;</span>, <span class="dt">model =</span> <span class="st">&quot;utc&quot;</span>)</a>
+<a class="sourceLine" id="cb2-3" title="3"><span class="co">#&gt;         plr       error model   method</span></a>
+<a class="sourceLine" id="cb2-4" title="4"><span class="co">#&gt; 1 -1.167666 0.005868254   utc weighted</span></a>
+<a class="sourceLine" id="cb2-5" title="5">PVplr<span class="op">::</span><span class="kw">plr_yoy_regression</span>(decomp, <span class="dt">power_var =</span> <span class="st">&quot;trend&quot;</span>, <span class="dt">time_var =</span> <span class="st">&quot;age&quot;</span>, <span class="dt">per_year =</span> <span class="dv">365</span>, <span class="dt">model =</span> <span class="st">&quot;utc&quot;</span>)</a>
+<a class="sourceLine" id="cb2-6" title="6"><span class="co">#&gt;        plr    plr_sd model       method</span></a>
+<a class="sourceLine" id="cb2-7" title="7"><span class="co">#&gt; 1 -1.33156 0.2491123   utc year-on-year</span></a></code></pre></div>
+<p>The plr_seg_extract() function requires the predicted power time-series, the number of data points per year (as in YoY), the desired number of breakpoints, the names of the power and time variables, and lastly whether the segmented model of PLR result should be returned. return_model defaults to FALSE which returns the PLR results for each segment. Returning the model itself is useful for additional analysis or making piecewise plots.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="co"># evaluate segmented PLR results</span></a>
+<a class="sourceLine" id="cb3-2" title="2">seg_plr_result &lt;-<span class="st"> </span>PVplr<span class="op">::</span><span class="kw">plr_seg_extract</span>(<span class="dt">df =</span> decomp, <span class="dt">per_year =</span> <span class="dv">365</span>, <span class="dt">n_breakpoints =</span> <span class="dv">1</span>, <span class="dt">power_var =</span> <span class="st">&quot;trend&quot;</span>, <span class="dt">time_var =</span> <span class="st">&quot;age&quot;</span>)</a>
+<a class="sourceLine" id="cb3-3" title="3"></a>
+<a class="sourceLine" id="cb3-4" title="4">seg_plr_result</a>
+<a class="sourceLine" id="cb3-5" title="5"><span class="co">#&gt;          plr seg_start  seg_end      plr_sd segment     yint    Adj_R2</span></a>
+<a class="sourceLine" id="cb3-6" title="6"><span class="co">#&gt; 1 -0.7657671    0.0000 353.5522 0.008289897       1 2131.752 0.9925094</span></a>
+<a class="sourceLine" id="cb3-7" title="7"><span class="co">#&gt; 2 -1.3806033  353.5522 898.0000 0.008564670       2 2131.752 0.9925094</span></a>
+<a class="sourceLine" id="cb3-8" title="8"></a>
+<a class="sourceLine" id="cb3-9" title="9"><span class="co"># return segmented model instead of PLR result</span></a>
+<a class="sourceLine" id="cb3-10" title="10">model &lt;-<span class="st"> </span>PVplr<span class="op">::</span><span class="kw">plr_seg_extract</span>(<span class="dt">df =</span> decomp, <span class="dt">per_year =</span> <span class="dv">365</span>, <span class="dt">n_breakpoints =</span> <span class="dv">1</span>, <span class="dt">power_var =</span> <span class="st">&quot;trend&quot;</span>, <span class="dt">time_var =</span> <span class="st">&quot;age&quot;</span>, <span class="dt">return_model =</span> <span class="ot">TRUE</span>)</a>
+<a class="sourceLine" id="cb3-11" title="11"></a>
+<a class="sourceLine" id="cb3-12" title="12"><span class="co"># predict data along time-series with piecewise model for plotting</span></a>
+<a class="sourceLine" id="cb3-13" title="13">pred &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">age =</span> <span class="kw">seq</span>(<span class="dv">1</span>, <span class="kw">max</span>(decomp<span class="op">$</span>age, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>), <span class="dt">length.out =</span> <span class="dv">10000</span>))</a>
+<a class="sourceLine" id="cb3-14" title="14">pred<span class="op">$</span>seg &lt;-<span class="st"> </span><span class="kw">predict</span>(model, <span class="dt">newdata =</span> pred)</a>
+<a class="sourceLine" id="cb3-15" title="15"></a>
+<a class="sourceLine" id="cb3-16" title="16"><span class="co"># plot segmented model along decomposed time series</span></a>
+<a class="sourceLine" id="cb3-17" title="17"><span class="co"># add initial PLR trend as well</span></a>
+<a class="sourceLine" id="cb3-18" title="18"><span class="kw">ggplot</span>() <span class="op">+</span></a>
+<a class="sourceLine" id="cb3-19" title="19"><span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> decomp, <span class="kw">aes</span>(<span class="dt">x =</span> age, <span class="dt">y =</span> trend, <span class="dt">color =</span> <span class="st">&quot;STL Decompose&quot;</span>), <span class="dt">size =</span> <span class="dv">2</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb3-20" title="20"><span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data =</span> pred, <span class="kw">aes</span>(<span class="dt">x =</span> age, <span class="dt">y =</span> seg, <span class="dt">color =</span> <span class="st">&quot;Piecewise Model&quot;</span>), <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb3-21" title="21"><span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">slope =</span> seg_plr_result<span class="op">$</span>plr[<span class="dv">1</span>]<span class="op">/</span>(<span class="dv">100</span><span class="op">*</span><span class="dv">365</span>)<span class="op">*</span>seg_plr_result<span class="op">$</span>yint[<span class="dv">1</span>], <span class="dt">intercept =</span> seg_plr_result<span class="op">$</span>yint[<span class="dv">1</span>], <span class="dt">linetype =</span> <span class="st">&quot;dotted&quot;</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb3-22" title="22"><span class="st">  </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;blue&quot;</span>, <span class="st">&quot;orange&quot;</span>)) <span class="op">+</span></a>
+<a class="sourceLine" id="cb3-23" title="23"><span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> seg_plr_result<span class="op">$</span>seg_end[<span class="dv">1</span>], <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb3-24" title="24"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Time (days)&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;Predicted Power (W)&quot;</span>, <span class="dt">color =</span> <span class="st">&quot;&quot;</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb3-25" title="25"><span class="st">  </span><span class="kw">theme_bw</span>(<span class="dt">base_size =</span> <span class="dv">8</span>) <span class="op">+</span></a>
+<a class="sourceLine" id="cb3-26" title="26"><span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="kw">c</span>(<span class="fl">0.7</span>, <span class="fl">0.7</span>))</a></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>Non-linear PLR results show PLR values of <span class="math inline">\(-0.87 \%/yr\)</span> for the first 182 time segments (days in this case), followed by a smaller PLR of <span class="math inline">\(-0.67\%/yr\)</span> after that period, indicating evidence of higher losses during the start of this systems performance.</p>
+<p>Individual time segments and uncertainties are given for each PLR result. This segmented model gives a very strong with with the decomposed trend of the time-series, with an <span class="math inline">\(Adj-R^2\)</span> over <span class="math inline">\(0.99\)</span>. As of this time we do not yet have a bootstrap uncertainty application for piecewise PLE calculations, we are currently working on the best ways to represent PLR uncertainty for all different calculation methods with future updates planned to expand on this.</p>
+<div id="sources" class="section level2">
+<h2>Sources</h2>
+<p>V. M. R. Muggeo, “Segmented: Regression Models with Break-Points / Change-Points Estimation,” Nov. 2017.</p>
+<p>V. M. Muggeo, “Segmented: An R package to fit regression models with broken-line relationships,” R news, vol. 8, no. 1, pp. 20–25, 2008.</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
