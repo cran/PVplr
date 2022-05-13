@@ -112,24 +112,26 @@ num_test <- function(col) {
 #' @importFrom rlang .data
 mbm_resample <- function(df, fraction, by) {
   
+  # Fix global variable binding
+  psem <- week <- day <- NULL
   . <- NULL
   
   if (by == "month") {
     
     re <- df %>%
-      group_by(.data$psem) %>%
+      group_by(psem) %>%
       sample_frac(., size = fraction, replace = TRUE) %>%
       ungroup()
   } else if (by == "week") {
     
     re <- df %>%
-      group_by(.data$week) %>%
+      group_by(week) %>%
       sample_frac(., size = fraction, replace = TRUE) %>%
       ungroup()
   } else if (by == "day") {
     
     re <- df %>%
-      group_by(.data$day) %>%
+      group_by(day) %>%
       sample_frac(., size = fraction, replace = TRUE) %>%
       ungroup()
   }

@@ -42,6 +42,9 @@
 plr_weighted_regression <- function(data, power_var, time_var, model, per_year = 12,
                                     weight_var = NA) {
   
+  # Fix global variable binding
+  wvar <- NULL
+  
   # name variables for regression
   data$pvar <- data[, power_var]
   data$tvar <- data[, time_var]
@@ -56,7 +59,7 @@ plr_weighted_regression <- function(data, power_var, time_var, model, per_year =
     # regression model weighted to the given variable
     # this will need to be changed i for a different weight variable
     # as the 1/wvar^2 assumes sigma is the weight
-    lm.power <- lm(pvar ~ tvar, data  = data, weights = .data$wvar)
+    lm.power <- lm(pvar ~ tvar, data  = data, weights = wvar)
   }
   
   # Rate of Change is slope/intercept converted to %/year
@@ -132,6 +135,9 @@ plr_weighted_regression <- function(data, power_var, time_var, model, per_year =
 plr_yoy_regression <- function(data, power_var, time_var, model, per_year = 12, 
                                         return_PLR = TRUE) {
   
+  # Fix global variable binding
+  pvar <- tvar <- NULL
+  
   #requires dplyr
   
   # name variables for regression
@@ -149,7 +155,7 @@ plr_yoy_regression <- function(data, power_var, time_var, model, per_year = 12,
     # select rows separated by 1 year
     p1 <- data[j, ]
     p2 <- data[data$tvar == p1$tvar + per_year, ]
-    df <- rbind(p1, p2) %>% dplyr::select(.data$pvar, .data$tvar)
+    df <- rbind(p1, p2) %>% dplyr::select(pvar, tvar)
     
     # only measure difference if both points exist
     if (!any(is.na(df))) {

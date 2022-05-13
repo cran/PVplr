@@ -61,6 +61,7 @@ plr_xbx_model <- function(df, var_list, by = "month", data_cutoff = 30,
   power_var <- NULL
   std_error <- NULL
   outlier <- NULL
+  .fitted <- NULL
 
   
   # define representative conditions
@@ -90,7 +91,7 @@ plr_xbx_model <- function(df, var_list, by = "month", data_cutoff = 30,
     
     # smallest daily max irradiance, over 300
     irrad_var <- model_df %>%
-      dplyr::group_by(.data$tvar) %>%
+      dplyr::group_by(tvar) %>%
       dplyr::summarise(max = max(irrad_var)) %>%
       dplyr::ungroup() %>%
       dplyr::filter(max > 300) %>%
@@ -127,7 +128,7 @@ plr_xbx_model <- function(df, var_list, by = "month", data_cutoff = 30,
     
     # determine number of data points for each month
     n <- model_df %>%
-      dplyr::group_by(.data$tvar) %>%
+      dplyr::group_by(tvar) %>%
       dplyr::summarise(n = dplyr::n())
     
     # suppress warnings of misleading model fits, some time segments will have low data count
@@ -145,7 +146,7 @@ plr_xbx_model <- function(df, var_list, by = "month", data_cutoff = 30,
     
     # determine number of data points for each month
     n <- model_df %>%
-      dplyr::group_by(.data$tvar) %>%
+      dplyr::group_by(tvar) %>%
       dplyr::summarise(n = dplyr::n())
     
     # suppress warnings of misleading fits, some time segments will have low data count
@@ -180,8 +181,8 @@ plr_xbx_model <- function(df, var_list, by = "month", data_cutoff = 30,
   
   # reduce to necessary columns for output
   res <- res %>%
-    dplyr::mutate(time_var = .data$tvar, power_var = .data$.fitted, std_error = .data$sigma/sqrt(.data$n)) %>%
-    dplyr::select(.data$time_var, .data$power_var, .data$std_error, .data$sigma, .data$outlier) 
+    dplyr::mutate(time_var = tvar, power_var = .fitted, std_error = sigma/sqrt(n)) %>%
+    dplyr::select(time_var, power_var, std_error, sigma, outlier) 
     
   
   return(as.data.frame(res))
@@ -247,6 +248,7 @@ plr_pvusa_model <- function(df, var_list, by = "month", data_cutoff = 30,
   power_var <- NULL
   std_error <- NULL
   outlier <- NULL
+  .fitted <- NULL
   
   # define representative conditions
   
@@ -273,7 +275,7 @@ plr_pvusa_model <- function(df, var_list, by = "month", data_cutoff = 30,
   if (is.null(predict_data)) {
     
     irrad_var <- model_df %>%
-      dplyr::group_by(.data$tvar) %>%
+      dplyr::group_by(tvar) %>%
       dplyr::summarise(max = max(irrad_var)) %>%
       dplyr::ungroup() %>%
       dplyr::filter(max > 300) %>%
@@ -333,7 +335,7 @@ plr_pvusa_model <- function(df, var_list, by = "month", data_cutoff = 30,
   
   # determine number of data points for each month
   n <- model_df %>%
-    dplyr::group_by(.data$tvar) %>%
+    dplyr::group_by(tvar) %>%
     dplyr::summarise(n = dplyr::n())
   
   
@@ -356,7 +358,7 @@ plr_pvusa_model <- function(df, var_list, by = "month", data_cutoff = 30,
   res$outlier <- (res$.fitted > upper|res$.fitted < lower)
   
   res <- res %>%
-    dplyr::mutate(time_var = .data$tvar, power_var = .data$.fitted, std_error = .data$sigma/sqrt(.data$n)) %>%
+    dplyr::mutate(time_var = tvar, power_var = .fitted, std_error = sigma/sqrt(n)) %>%
     dplyr::select(time_var, power_var, std_error, sigma, outlier) 
   
   return(as.data.frame(res))
@@ -416,6 +418,7 @@ plr_6k_model <- function(df, var_list, nameplate_power, by = "month", data_cutof
   power_var <- NULL
   std_error <- NULL
   outlier <- NULL
+  .fitted <- NULL
   
   # define representative conditions
   
@@ -443,7 +446,7 @@ plr_6k_model <- function(df, var_list, nameplate_power, by = "month", data_cutof
   if (is.null(predict_data)) {
     
     irrad_var <- model_df %>%
-      dplyr::group_by(.data$tvar) %>%
+      dplyr::group_by(tvar) %>%
       dplyr::summarise(max = max(irrad_var)) %>%
       dplyr::ungroup() %>%
       dplyr::filter(max > 300) %>%
@@ -496,7 +499,7 @@ plr_6k_model <- function(df, var_list, nameplate_power, by = "month", data_cutof
   
   # determine number of data points for each month
   n <- model_df %>%
-    dplyr::group_by(.data$tvar) %>%
+    dplyr::group_by(tvar) %>%
     dplyr::summarise(n = dplyr::n())
 
   res <- res %>% 
@@ -517,7 +520,7 @@ plr_6k_model <- function(df, var_list, nameplate_power, by = "month", data_cutof
   res$outlier <- (res$.fitted > upper|res$.fitted < lower)
   
   res <- res %>%
-    dplyr::mutate(time_var = .data$tvar, power_var = .data$.fitted, std_error = .data$sigma/sqrt(.data$n)) %>%
+    dplyr::mutate(time_var = tvar, power_var = .fitted, std_error = sigma/sqrt(n)) %>%
     dplyr::select(time_var, power_var, std_error, sigma, outlier) 
   
   
@@ -596,6 +599,7 @@ plr_xbx_utc_model <- function(df, var_list, by = "month",
   power_var <- NULL
   std_error <- NULL
   outlier <- NULL
+  .fitted <- NULL
   
   # define representative conditions
   
@@ -622,7 +626,7 @@ plr_xbx_utc_model <- function(df, var_list, by = "month",
   if (is.null(predict_data)) {
     
     irrad_var <- model_df %>%
-      dplyr::group_by(.data$tvar) %>%
+      dplyr::group_by(tvar) %>%
       dplyr::summarise(max = max(irrad_var)) %>% #find max irrad per tvar
       dplyr::ungroup() %>%
       dplyr::filter(max > 300) %>% #only interested in maxes over 300
@@ -656,8 +660,8 @@ plr_xbx_utc_model <- function(df, var_list, by = "month",
   utc <- model_df %>%
     dplyr::filter(irrad_var < (ref_irrad + irrad_range),
                   irrad_var > (ref_irrad - irrad_range), 
-                  .data$power_var > 0.05 * max(.data$power_var)) %>%
-    dplyr::mutate(frac = .data$power_var * (temp_var + 273.15)) #kelvin
+                  power_var > 0.05 * max(power_var)) %>%
+    dplyr::mutate(frac = power_var * (temp_var + 273.15)) #kelvin
   
   # filter outliers that may influence coefficient
   iqr <- stats::IQR(utc$frac)
@@ -671,7 +675,7 @@ plr_xbx_utc_model <- function(df, var_list, by = "month",
   utc <- as.numeric(utc_mod$coefficients[2])/ref_irrad
   
   res <- model_df %>%
-    dplyr::mutate(power_corr = .data$power_var + utc * (pred$temp_var - temp_var) * irrad_var) %>%
+    dplyr::mutate(power_corr = power_var + utc * (pred$temp_var - temp_var) * irrad_var) %>%
     tidyr::nest(data = -tvar) %>% 
     dplyr::mutate(
       fit = purrr::map(data, ~ lm(power_var ~ irrad_var -1, data = .)),
@@ -683,7 +687,7 @@ plr_xbx_utc_model <- function(df, var_list, by = "month",
   
   # determine number of data points for each month
   n <- model_df %>%
-    dplyr::group_by(.data$tvar) %>%
+    dplyr::group_by(tvar) %>%
     dplyr::summarise(n = dplyr::n())
   
   res <- res %>% 
@@ -705,7 +709,7 @@ plr_xbx_utc_model <- function(df, var_list, by = "month",
   
 
   res <- res %>%
-    dplyr::mutate(time_var = .data$tvar, power_var = .data$.fitted, std_error = .data$sigma/sqrt(.data$n)) %>%
+    dplyr::mutate(time_var = tvar, power_var = .fitted, std_error = sigma/sqrt(n)) %>%
     dplyr::select(time_var, power_var, std_error, sigma, outlier) 
   
   return(as.data.frame(res))
