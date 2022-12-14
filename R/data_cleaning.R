@@ -29,7 +29,7 @@ plr_variable_check <- function(df) {
   time_var <- dplyr::if_else("tmst" %in% names, "tmst", "tutc")
   irrad_var <- dplyr::if_else("poay" %in% names, "poay", "ghir")
   temp_var <- dplyr::if_else("temp" %in% names, "temp", "modt")
-  wind_var <- dplyr::if_else("wspa" %in% names, "wspa", NULL)
+  wind_var <- dplyr::if_else("wspa" %in% names, "wspa", NA_character_)
   final <- data.frame(time_var, power_var, irrad_var, temp_var, wind_var,
                       stringsAsFactors = FALSE)
   if (is.null(final$wind_var)) {
