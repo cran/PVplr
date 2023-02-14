@@ -1,7 +1,7 @@
 Package: PVplr
 Type: Package
 Title: Performance Loss Rate Analysis Pipeline
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: c(
     person("Alan", "Curran", email = "alan.curran@case.edu", role = c("aut"),
            comment = c(ORCID = "0000-0002-4505-8359")),
@@ -39,11 +39,11 @@ Imports: dplyr (>= 0.7.8), magrittr (>= 1.5), broom (>= 0.5.1), ggplot2
         (>= 3.1.0), stlplus (>= 0.5.1), cluster (>= 2.0.7-1), purrr (>=
         0.3.3), tidyr (>= 1.1.1), minpack.lm (>= 1.2-1), rlang (>=
         0.3.1), segmented, forecast, scales, zoo
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
 Suggests: testthat, knitr, rmarkdown
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2022-04-25 19:24:55 UTC; wco3
+Packaged: 2023-02-14 17:29:21 UTC; wco3
 Author: Alan Curran [aut] (<https://orcid.org/0000-0002-4505-8359>),
   Tyler Burleyson [aut] (<https://orcid.org/0000-0002-6356-5354>),
   William Oltjen [aut] (<https://orcid.org/0000-0003-0380-1033>),
@@ -53,4 +53,4 @@ Author: Alan Curran [aut] (<https://orcid.org/0000-0002-4505-8359>),
   Solar Durability and Lifetime Extension research center [cph, fnd]
 Maintainer: Roger French <roger.french@case.edu>
 Repository: CRAN
-Date/Publication: 2022-05-13 21:10:02 UTC
+Date/Publication: 2023-02-14 18:00:02 UTC

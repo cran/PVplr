@@ -678,7 +678,7 @@ plr_xbx_utc_model <- function(df, var_list, by = "month",
     dplyr::mutate(power_corr = power_var + utc * (pred$temp_var - temp_var) * irrad_var) %>%
     tidyr::nest(data = -tvar) %>% 
     dplyr::mutate(
-      fit = purrr::map(data, ~ lm(power_var ~ irrad_var -1, data = .)),
+      fit = purrr::map(data, ~ lm(power_corr ~ irrad_var -1, data = .)),
       prediction = purrr::map(fit, augment, newdata = pred),
       tidy = purrr::map(fit, tidy),
       glance  = purrr::map(fit, glance)

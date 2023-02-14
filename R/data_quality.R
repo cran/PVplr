@@ -13,20 +13,19 @@
 #'
 #' @examples
 #' # build heatmap
-#' heat <- plr_pvheatmap(test_df, col = "g_poa", timestamp_col = "timestamp", upper_threshold = 0.99, lower_threshold = 0)
+#' heat <- plr_pvheatmap(test_df, col = "g_poa", timestamp_col = "timestamp", 
+#'                       upper_threshold = 0.99, lower_threshold = 0)
 #' # display heatmap
 #' plot(heat)
 #' 
 plr_pvheatmap <- function(df, col, timestamp_col, timestamp_format = "%Y-%m-%d %H:%M:%S",  upper_threshold = 1, lower_threshold = 0, font_size = 12){
   
-  # Fix global variable binding
-  hms <- NULL
-  
+  hms <- NA
   # remove NA timestamps
   df <- df[stats::complete.cases(df[[timestamp_col]]),]
   
   # check timestamp class, covert to posixct if necessary
-  if(inherits(df[[timestamp_col]][1], 'POSIXct')){
+  if(class(df[[timestamp_col]][1])[1] == 'POSIXct'){
     df$timestamp <- df[[timestamp_col]]
   }else{
     df$timestamp <- as.POSIXct(strptime(df[[timestamp_col]], format = timestamp_format, tz = "Ugrade_pv(df, 'iacp', meta$row_key[i], 'tmst')TC"))
@@ -59,7 +58,7 @@ plr_pvheatmap <- function(df, col, timestamp_col, timestamp_format = "%Y-%m-%d %
   top <- as.numeric(stats::quantile(df[[col]], upper_threshold, na.rm = TRUE))
   
   # ggplot output
-  hmpl <- ggplot2::ggplot(data = df, ggplot2::aes(y= hms, x = date, fill = col)) +
+  hmpl <- ggplot2::ggplot(data = df, ggplot2::aes(y= hms, x = date, fill = .data[[col]])) +
     ggplot2::geom_tile() +
     ggplot2::labs(caption = NULL, title = NULL) +
     ggplot2::theme_bw(font_size) +
@@ -76,6 +75,8 @@ plr_pvheatmap <- function(df, col, timestamp_col, timestamp_format = "%Y-%m-%d %
 #'
 #' @param df the PV time series data. It can be the direct output of read.csv(file_name, stringsAsFactors = F)
 #' @param col column of the grading, default 'poay'
+#' @param timestamp_col the character name of the timestamp column
+#' @param timestamp_format the POSIXct format of the timestamp if conversion is needed
 #' @param id The name of the pv data
 #' @param batch_days the batch of data that the anomaly detection is applied. Since time series decomposition is used,
 #' one seasonality will be applied for whole data which is inefficeint, if NA, will pass whole
@@ -103,7 +104,9 @@ grade_pv <- function(df, col = 'poay', id = 'pv_id', timestamp_col = 'tmst', tim
 #' based on location modifies the timezone using googleapi and
 #' then generates the useful columns
 #'
-#' @param file the name of the dile as character or temp[i]
+#' @param df dataframe containing at least the timestamp column and the variable to be plotted with the heatmap
+#' @param col the character name of the column to be ploted
+#' @param timestamp_col the character name of the timestamp column
 #' which i is the number of file in the list
 #'
 #' @return a dataframe with fixed timestamps and useful cooumns
@@ -211,7 +214,7 @@ ts_inflate <- function(data, ts_col, col_to_imp, dt) {
 #' @param merge_data A data frame that will be linearly
 #' interpolated and merged with \code{data}.
 #'
-#' @param merge_data_ts The column name for the
+#' @param merge_ts The column name for the
 #' \code{merge_data} timestamp. Defaults to 'timestamp'.
 #'
 #' @return The resulting merged data frame.
@@ -293,8 +296,8 @@ ip_num_time <- function(data, ts_col = "timestamp") {
 #' length P: more than 2 years, F: less than 2 years
 #'
 #'@param energy_data structured energy dataframe
-#'@param filename the name of the dataset like 'Building ID'
 #'@param col Input column
+#'@param id PV system ID
 #'@param batch_days the batch of data that the anomaly detection is applied. Since time series decomposition is used,
 #'one seasonality will be applied for whole data which is inefficient, if NA, will pass whole
 #'
@@ -317,8 +320,7 @@ data_quality_check <- function(energy_data, col = 'elec_cons', id = 'pv_df',
   # zero or negative points are replaced with NA in electricty and treated as missing points
   # (the corresponding elec_cons_imp = 1)
   
-  # Fix global variable binding
-  elec_cons <- NULL
+  elec_cons <- NA
   
   #observations per hour
   freq <- 60/time_frequency(energy_data[1:2000,])
@@ -350,6 +352,10 @@ data_quality_check <- function(energy_data, col = 'elec_cons', id = 'pv_df',
   # gets the largest one in hours
   raw$largest_gap_hour <- max(chunks$length)/freq
   
+  if (is.na(raw$largest_gap_hour)) {
+    raw$largest_gap_hour = 0
+  }
+  
   raw$length_day <- floor(as.numeric(difftime(energy_data$timestamp[nrow(energy_data)],
                                               energy_data$timestamp[1],
                                               units ='days')))
@@ -365,7 +371,7 @@ data_quality_check <- function(energy_data, col = 'elec_cons', id = 'pv_df',
   
   # all days peak values  (0.98 quantile to exclude outliers)
   daily_max <- en_anom %>%
-    group_by(date) %>%
+    dplyr::group_by(date) %>%
     dplyr::summarise(max_power = as.numeric(stats::quantile(elec_cons, 0.98, na.rm = TRUE)))
   
   # standard deviation of remainders in kW
@@ -384,7 +390,7 @@ data_quality_check <- function(energy_data, col = 'elec_cons', id = 'pv_df',
   
   # first 30 days peak values  (0.98 quantile to exclude outliers)
   daily_max_30 <- en_anom_30days %>%
-    group_by(date) %>%
+    dplyr::group_by(date) %>%
     dplyr::summarise(max_power = as.numeric(stats::quantile(elec_cons, 0.98, na.rm = TRUE)))
   
   # mean of seasonality and trend in first 30 days
@@ -543,7 +549,9 @@ anomaly_detector <- function(df, batch_days = 90){
     }
     
     # batch subset
-    df_batch <- df[which(df$timestamp >=start_date & df$timestamp <= end_date), ]
+    
+    df_batch <- df %>%
+      dplyr::filter(date >= start_date, date <= end_date)
     
     # anomaly detection
     df_batch_anomaly <- anomalies(df_batch)
@@ -577,14 +585,9 @@ anomaly_detector <- function(df, batch_days = 90){
 #'
 #'@return df with two columns of cleaned_energy and anom_flag
 #'
-
-
-
-
 anomalies <- function(df) {
   
-  ## Fix global variable binding issue
-  daildata <- NULL
+  daildaata <- NA
   
   ## assign the row names to a new column
   df$row <- as.numeric(rownames(df))
@@ -603,9 +606,9 @@ anomalies <- function(df) {
   ## find frequncy of data
   #freq <- 24 * 60/time_frequency(df)
   freq <- df %>%
-    group_by(date) %>%
-    dplyr::summarise(daildata = dplyr::n()) %>%
-    dplyr::summarise(median_value = as.numeric(median(daildata, na.rm = TRUE))) %>%
+    dplyr::group_by(date) %>%
+    dplyr::summarise(daildaata = dplyr::n()) %>%
+    dplyr::summarise(median_value = as.numeric(median(daildaata, na.rm = TRUE))) %>%
     as.data.frame()
   
   ## apply time series decompostion using "stl", and extract the residuals
@@ -704,8 +707,9 @@ df_With_on_time <- function(df){
 
 day_time_start_end <- function(df){
   
-  # Fix global variable binding
-  num_time <- start <- end <- NULL
+  num_time <- NA
+  start <- NA
+  end <- NA
   
   # if the elec_cons is positive for at least 10 datapoints.
   if(length(df[which(df$elec_cons > 0), ]$timestamp) > 10){
@@ -746,7 +750,7 @@ day_time_start_end <- function(df){
 
 #' Largest Intervals
 #'
-#' @param df
+#' @param df Dataframe
 #'
 #' @return Intervals
 #' @author Arash Khalilnejad
@@ -873,12 +877,8 @@ lin_inter_missing_energy <- function(data, threshold = 4) {
 #' string will remain the same.
 #'
 #' @param data A data frame with hourly data.
-#'
 #' @param data_ts The column name for the \code{data}
 #' timestamp.
-#'
-#' @param cols The columns to linearly interpolate. Eventually
-#' this should be dynamically determined by \code{is.numeric}.
 #' @author Arash Khalilnejad
 #'
 #' @return The resulting fifteen minute data frame.
@@ -916,8 +916,9 @@ lin_inter_hrly_to_fifteen <- function(data, data_ts) {
 #' Ghost cluster export call to make sure
 #' testCoverage's trace function and environment
 #' are available.
-#'
-#' @inheritParams parallel::clusterExport
+#' @param cluster Cluster
+#' @param varlist Character vector of names of objects to export.
+#' @param envir Environment from which t export variables
 #'
 #' @export
 
@@ -929,4 +930,3 @@ parallel_cluster_export <- function(cluster, varlist, envir = .GlobalEnv) {
     parallel::clusterExport(cluster, varlist, envir)
   }
 }
-

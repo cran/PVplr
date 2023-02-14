@@ -1,5 +1,3 @@
-
-
 #' Define Standard Variable Names
 #' @description The method determines the variable names used by the input dataframe.
 #'  It looks for the following labels:
@@ -29,12 +27,18 @@ plr_variable_check <- function(df) {
   time_var <- dplyr::if_else("tmst" %in% names, "tmst", "tutc")
   irrad_var <- dplyr::if_else("poay" %in% names, "poay", "ghir")
   temp_var <- dplyr::if_else("temp" %in% names, "temp", "modt")
-  wind_var <- dplyr::if_else("wspa" %in% names, "wspa", NULL)
-  final <- data.frame(time_var, power_var, irrad_var, temp_var, wind_var,
-                      stringsAsFactors = FALSE)
-  if (is.null(final$wind_var)) {
-    final <- dplyr::select(time_var, power_var, irrad_var, temp_var)
+  
+  if ("wspa" %in% names) {
+    wind_var <- "wspa"
+    
+    final <- data.frame(time_var, power_var, irrad_var, temp_var, wind_var,
+                        stringsAsFactors = FALSE)
+  } else {
+    
+    final <- data.frame(time_var, power_var, irrad_var, temp_var, 
+                        stringsAsFactors = FALSE)
   }
+  
   return(final)
 }
 
